@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  </head>
+
+  <body>
+
+<style>
+body {
+  background:black;
+  color:white;
+  font-family:monospace;
+  font-size:16px; 
+}
+
+.code_block {
+  background-color:#f0f0f0; 
+  color:black; padding:5px; 
+  font-family:monospace; 
+  border-radius:3px;
+  overflow: auto
+}
+</style>
+
+    <nav>
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+    </nav>
+
+    <h1>{{ page.title }}</h1>
+
+    <section>
+      {{ content }}
+    </section>
+
+    <footer>
+      <br>
+      <a href="/blog/">All blogs</a>
+    </footer>
+
+
+
+
+  </body>
+</html>
