@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Using Taylor Series to Approximate Trigonometric Functions With Code</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  </head>
+
+  <body>
+
+<style>
+body {
+  background:black;
+  color:white;
+  font-family:monospace;
+  font-size:16px; 
+}
+
+.code_block {
+  background-color:#f0f0f0; 
+  color:black; padding:5px; 
+  font-family:monospace; 
+  border-radius:3px;
+  overflow: auto
+}
+</style>
+
+    <nav>
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+    </nav>
+
+    <h1>Using Taylor Series to Approximate Trigonometric Functions With Code</h1>
+
+    <section>
+      <p>Hi there! If you have ever used a calculator to calculate \(sin\), \(cos\), \(tan\) or any other trig function, you may be wondering how the calculator gets its answer. For example, how does it determine that \(cos(6.7) ≈ 0.914\)? The answer is Taylor Series.</p>
+
+<p>Taylor Series were discovered by Brook Taylor in 1715 for the purpose of approximating functions such as \(e^x\), \(ln(x)\), and trigonometric functions. They work by adding up an infinite series of terms that ultimately adds to the exact answer. However, you can simply use a finite number of terms in the series to get a nice approximation of the answer instead.</p>
+
+<p><img src="/blog/assets/taylor_series.png" alt="Taylor Series" style="background-color: white; width:300px; height:auto;" /></p>
+
+<p>SOURCE: <a href="https://en.wikipedia.org/wiki/Taylor_series#/media/File:Sintay_SVG.svg">https://en.wikipedia.org/wiki/Taylor_series#/media/File:Sintay_SVG.svg</a></p>
+
+<p>You can see that each time the order of the polynomial is increased (the more bends in the curve), the closer the approximation gets to the actual graph.</p>
+
+<p><br /><br /></p>
+
+<h2>How Do Taylor Series Work?</h2>
+
+<p>Here is the Taylor Series expansion for a given function \(f\):
+<br /><br />
+\(f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(a)}{n!} (x - a)^n =\)
+<br /><br />
+\(f(a) + f'(a)(x - a) + \frac{f''(a)}{2!} (x - a)^2 + \frac{f'''(a)}{3!} (x - a)^3 + \dots\)</p>
+
+<p><br /><br /></p>
+
+<p>This all looks very complicated, but it all boils down to approximating a function using polynomials. By taking derivatives of \(f\) at a specific \(a\), we can build a series of terms that get closer and closer to the true function. The more terms we include, the closer the approximation gets to the true answer.</p>
+
+<p>I won’t go into the maths that are used to determine specific Taylor Series, but if you are interested here is an article that goes more in-depth and has some practice problems: <a href="https://tutorial.math.lamar.edu/classes/calcii/taylorseries.aspx">https://tutorial.math.lamar.edu/classes/calcii/taylorseries.aspx</a>.</p>
+
+<p>So now onto the meat of this post. I have been working on making a compiled coding language for a few weeks now, and I wanted to write my own builtin functions in Assembly, including all of the major trigonometric functions. This required me to turn to Taylor Series, but, using the pesky trigonomtric identities that you probably learned in high school, we will only need one series to calculate all six (sin, cos, tan, sec, csc, and cot).</p>
+
+<p><br /><br /></p>
+
+<h2>Using Taylor Series to Approximate sin(x)</h2>
+
+<p>The Taylor Series for \(f(x) = sin(x)\) about \(x = 0\) is:
+<br />
+\(\sin x = \sum_{n=0}^{\infty} \frac{(-1)^n}{(2n+1)!} x^{2n+1} = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \dots\)</p>
+
+<p><br /></p>
+
+<p>IMPORTANT NOTE: This Taylor Series is designed only for radian inputs, not degrees. However, degrees can easily be converted to radians by multiplying by \(\pi/180\).</p>
+
+<p><br /><br /></p>
+
+<p>Looking at the equation, you can see that the Taylor Series starts with a singular term, \(x\), then alternates between subtracting and adding terms ad infinitum. Each new term increases the power of \(x\) by two and is divided by the factorial of that exponent.</p>
+
+<p>To check if this works, we can do a simple example by hand. Hopefully you remember that \(sin(\pi) = 0\). Take out a calculator–or just use the one on Google–and try typing in the first few terms of the infinite series. It should look something like this:
+<br /><br />
+\(\pi - \frac{\pi^3}{3!} + \frac{\pi^5}{5!} - \frac{\pi^7}{7!} = -0.0752206\)
+<br /><br />
+Add a few more terms and you get -0.00044516. Add an infinite amount of terms and you get 0.</p>
+
+<p><br /><br /></p>
+
+<h2>Coding a Function to Calculate sin(x)</h2>
+
+<p>Let’s write some pseudocode for the function to get the general idea of how it will work. We know that each term has an \(x\), each subsequent term is raised to \(2n + 1\) and divided by \((2n + 1)!\), and each term alternates between addition and subtraction.</p>
+
+<p>Keeping all this in mind, here is the pseudocode I have written:</p>
+
+<pre class="code_block">
+order = 10                             // How many times should the loop run
+result = 0                             // Where the result will be stored
+sign = 1                               // Alternates between +1 and -1
+for n from 0 to order:                 // n starts at 0 and loops up to 'order'
+    exponent = 2n + 1                  // Odd powers of x (1, 3, 5...)
+    term = (x^exponent) / exponent!    // Calculate term
+    result += sign * term              // Add/subtract term
+    sign = sign * -1                   // Flip sign for next term
+</pre>
+
+<p>If this code was run, the result variable would now store the \(sin(x)\) approximation.</p>
+
+<p><br /><br /></p>
+
+<p><b>Optimizations:</b>
+Instead of calculating \((2n + 1)!\) every time the loop runs, a seperate variable can be created to store this value. Each time the loop runs, this variable should be multiplied by \(2n + 1\).</p>
+
+<p>Instead of calculating \(x^{(2n + 1)}\) each time, a new variable can be created to store \(x\). Then each time the loop runs, the variable will be multipled by \(x^2\). So the variable will be \(x\), then \(x^3\), then \(x^5\), then \(x^7\dots\)</p>
+
+<p><br /><br /></p>
+
+<p><b>Assembly Version:</b>
+Here is a version of this code that I wrote in x86 ASM, just so you can see a real implementation of it. I wrote this for my coding language Magno, but it isn’t very optimized so there is a lot of room for improvement.</p>
+
+<pre class="code_block">
+; copy this code into a file called sin_calc.asm and run this code in the command line to create an exe
+; nasm -f win64 -o sin_calc.o sin_calc.asm &amp;&amp; gcc -o sin_calc.exe sin_calc.o c_funcs.o -luser32 -lkernel32 -lgdi32 &amp;&amp; sin_calc.exe
+
+bits 64
+default rel
+extern printf
+extern ExitProcess
+global main
+
+segment .data
+  pi dq 3.14159265359
+  two_pi dq 6.28318530718
+
+  print_float db "%f", 0xd, 0xa, 0
+
+  ; CHANGE X TO CHANGE THE OUTPUT OF THE CODE
+  x dq 1.5    ; sin(x) will be calculated and printed in the command line
+
+segment .text
+
+main:
+  ; rax = sin(x)
+  mov rcx, [x]
+  call sin
+   
+  ; print the result
+  lea rcx, [print_float]
+  mov rdx, rax
+  call printf
+
+  ; quit
+  call ExitProcess
+
+sin:
+  ; inputs:
+  ; rcx = x (sd number)
+
+  ; store registers in the stack and reserve stack space
+  push rbx
+  push rcx
+  sub rsp, 25
+
+  ; [rsp + 24] = will the final product be 0 (it will be determined later)
+  mov byte [rsp + 24], 0
+
+  ; sin(x) = sin(x - 2 * k * pi), where k is any integer
+  ; therefore sin(x) = sin(x % 2pi);
+
+  ; rcx = rcx % 2pi
+  movq xmm0, rcx
+  movq xmm1, [two_pi]
+  movsd xmm2, xmm0
+  divsd xmm2, xmm1        
+  roundsd xmm3, xmm2, 3  
+  mulsd xmm3, xmm1        
+  subsd xmm0, xmm3
+  movq rcx, xmm0
+
+  ; if rcx is negative, add 2pi to make it positive, but still keep the final product the same
+  addsd xmm1, xmm0
+  movq rbx, xmm1
+  xorps xmm1, xmm1
+  comisd xmm0, xmm1
+  cmovbe rcx, rbx
+
+  ; determine if rcx is greater than pi or not
+  movq xmm0, rcx
+  movq xmm1, [pi]
+  comisd xmm0, xmm1
+  jb sin_after_correction
+
+sin_correction_needed:
+
+  ; rcx = rcx - pi
+  subsd xmm0, xmm1
+  movq rcx, xmm0
+
+  ; [rsp + 24] = 1 = correction will be made to the final product
+  mov byte [rsp + 24], 1
+
+sin_after_correction:
+
+  ; sin(x) = -sin(x) because sin is an odd function
+  ; and this taylor series only works for values of x between 0 and pi, so if 
+
+  ; sin(x) taylor series is:
+  ; x^1/1! - x^3/3! + x^5/5! - x^7/7!...
+
+  mov qword [rsp], 0      ; iterator
+  mov qword [rsp + 8], 1  ; (2n + 1)! = 1
+  mov [rsp + 16], rcx     ; x ^ (2n + 1) = x ^ 1
+
+  ; the first term in the series is 1/1! * x ^ 1 = x, so move that into xmm0
+  movq xmm0, rcx
+
+sin_loop:
+  ; end the loop if the iterator reaches the limit
+  add qword [rsp], 1
+  cmp qword [rsp], 7
+  jge end_sin_loop
+
+  ; [rsp + 8] = n!
+  mov rbx, [rsp]
+  imul rbx, 2
+  mov rax, [rsp + 8]
+  imul rax, rbx
+  inc rbx
+  imul rax, rbx
+  mov [rsp + 8], rax
+  
+  ; [rsp + 16] = x ^ (2n + 1)
+  movq xmm1, [rsp + 16]
+  movq xmm2, rcx
+  mulsd xmm1, xmm2
+  mulsd xmm1, xmm2
+  movq [rsp + 16], xmm1
+
+  ; the current term is (x ^ (2x + 1)) / (2x + 1)!
+  cvtsi2sd xmm2, [rsp + 8]
+  divsd xmm1, xmm2
+
+  ; determine if the iterator is odd or even to decide whether the term should be added or substracted from the final result
+  test byte [rsp], 1
+  jz sin_iter_is_even
+
+sin_iter_is_odd:
+  ; subtract the new value from the final result
+  subsd xmm0, xmm1
+  jmp sin_loop_after_change_value
+
+sin_iter_is_even:
+  ; add the new value to the final result
+  addsd xmm0, xmm1
+
+sin_loop_after_change_value:
+  ; end the loop if the current term has a negligible contribution to the final product
+  mov rax, 1
+  cvtsi2sd xmm2, rax
+  mov rax, 10000
+  cvtsi2sd xmm3, rax
+  divsd xmm2, xmm3
+  comisd xmm1, xmm2
+  jbe end_sin_loop
+
+  ; repeat the loop
+  jmp sin_loop
+
+end_sin_loop:
+
+  ; if [rsp + 24] is 1, correct the final product by making it negative
+  movq rax, xmm0
+  xorps xmm1, xmm1
+  subsd xmm1, xmm0
+  movq rbx, xmm1
+  cmp byte [rsp + 24], 1
+  cmove rax, rbx
+
+  ; reset the stack, reset registers, and return
+  add rsp, 25
+  pop rcx
+  pop rbx
+  ret
+</pre>
+
+<p><br /><br /></p>
+
+<h2>How Can This Be Used to Estimate Other Trig Functions?</h2>
+
+<p>\(cos(x)\):
+<br />
+\(cos(x) = sin(\pi/2 - x)\)
+<br />
+So if you want to calculate \(cos(5.5)\), you just need to calculate \(sin(\pi/2 - 5.5)\), which you can easily do with the previously written \(sin(x)\) approximation function.</p>
+
+<p>\(tan(x)\):
+<br />
+Now that we are able to calculate \(sin(x)\) and \(cos(x)\), we can calculate \(tan(x)\) using:
+<br />
+\(tan(x) = sin(x) / cos(x)\)</p>
+
+<p>\(sec(x)\):
+<br />
+\(sec(x) = 1 / cos(x)\)</p>
+
+<p>\(csc(x)\):
+<br />
+\(csc(x) = 1 / sin(x)\)</p>
+
+<p>\(cot(x)\):
+<br />
+\(cot(x) = 1 / tan(x)\)</p>
+
+<p><br /><br /></p>
+
+<h2>Conclusion</h2>
+
+<p>In this article you have learned the basics behind how Taylor Series work, their usefulness in approximating trigonometric functions, and how you can exploit the effectiveness of these calculations by using trigonometric identities. These topics are paramount for understanding the mechanics behind the functions in modern calculators, GPS navigation, and dynamic physics systems, just to name a few.</p>
+
+<p>If you want an extra challenge to test your skills, try converting these Taylor Series below to pseudocode. Think about what components are in each term, and what  changes between each term, such as sign, exponent, denominator, etc.</p>
+
+<p><br /><br /></p>
+
+<p>\(e(x)\):</p>
+
+\[e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 
+1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \dots\]
+
+<p><br /></p>
+
+<p>\(ln(x)\):</p>
+
+\[\ln(1+x) = \sum_{n=1}^{\infty} (-1)^{n+1} \frac{x^n}{n} = 
+x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} + \dots, \quad \text{for } |x| &lt; 1\]
+
+<p><br /></p>
+
+<p>\(arctan(x)\):</p>
+
+\[\tan^{-1} x = \sum_{n=0}^{\infty} \frac{(-1)^n}{2n+1} x^{2n+1} =
+x - \frac{x^3}{3} + \frac{x^5}{5} - \frac{x^7}{7} + \dots, \quad \text{for } |x| \leq 1\]
+
+<p><br /><br /></p>
+
+<p>Thanks for reading!</p>
+
+<pre style="color:yellow;">
+           ___  _____
+         .'/,-Y"     "~-.
+         l.Y             ^.
+         /\               _\_      "Doh!"
+        i            ___/"   "\
+        |          /"   "\   o !
+        l         ]     o !__./
+         \ _  _    \.___./    "~\
+          X \/ \            ___./
+         ( \ ___.   _..--~~"   ~`-.
+          ` Z,--   /               \
+            \__.  (   /       ______)
+              \   l  /-----~~" /
+               Y   \          /
+               |    "x______.^
+               |           \      -Row
+               j            Y
+                 -&gt;Homer&lt;-
+
+</pre>
+
+
+    </section>
+
+    <footer>
+      <br>
+      <a href="/blog/">All blogs</a>
+    </footer>
+
+
+
+
+  </body>
+</html>
