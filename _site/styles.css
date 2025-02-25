@@ -1,0 +1,97 @@
+body {
+  background: black;
+  color: white;
+  text-align: center;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 70px;
+  font-family: "Audiowide", sans-serif;
+}
+
+h2 {
+  font-size: 40px;
+  font-family: "Audiowide", sans-serif;
+
+  clear: both;
+}
+
+p {
+  font-family: sans-serif;
+  text-indent: 25px;
+  line-height: 25px;
+  padding: 10px;
+  font-size: 20px;
+  text-align: left;
+}
+
+button {
+  font-family: "Space Mono", monospace;
+  font-size: 20px;
+  background-color: #FF8C00;
+  color: black;
+  border: 0px;
+  border-radius: 10px;
+}
+
+.image-holder {
+  float: right;
+}
+
+.glitch-text {
+  font-family: "Space Mono", monospace;
+}
+
+.header {
+  padding: 60px;
+  text-align: center;
+  color: white;
+  background-image: -webkit-linear-gradient(rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 80%, rgba(0, 0, 0, 0.9) 100%), url("images/matrix.gif");
+}
+
+.svg {
+  position: relative;
+  top: 10px;
+  left: -10px;
+}
+
+.spider-container {
+  -webkit-user-select: none;        
+  -moz-user-select: none;  
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 4px; 
+  justify-content: center;
+}
+
+.column {
+  flex: 25%;
+  max-width: 25%;
+  padding: 0 4px;
+}
+
+.column img {
+  margin-top: 8px;
+  vertical-align: middle;
+}
+
+@media screen and (max-width: 400px) {
+  .column {
+    flex: 50%;
+    max-width: 50%;
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .column {
+    flex: 100%;
+    max-width: 100%;
+  }
+}
